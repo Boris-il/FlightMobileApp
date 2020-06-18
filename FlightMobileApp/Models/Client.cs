@@ -45,32 +45,41 @@ namespace FlightMobileApp.Model
         
         public void ProcessCommands()
         {
-            connect("127.0.0.1", 5403);
+            connect("127.0.0.1", 5404);
             double queryValue = 0;
             Result res;
+            string a;
             foreach(AsyncCommand aCommand in this.queue.GetConsumingEnumerable())
             {
                 // Aileron
                 queryValue = aCommand.Command.Aileron;
-                write(aCommand.Command.ParseAileronToString());
+                write("set"+aCommand.Command.ParseAileronToString());
+                a = read();
+                write("get /controls/flight/aileron\n");
                 res = CheckData(queryValue, read());
-                aCommand.Completion.SetResult(res);
+                
                 
                 // Elevator
                 queryValue = aCommand.Command.Elevator;
-                write(aCommand.Command.ParseElevatorToString());
+                write("set"+aCommand.Command.ParseElevatorToString());
+                a = read();
+
+                write("get /controls/flight/elevator\n" );
                 res = CheckData(queryValue, read());
-                aCommand.Completion.SetResult(res);
+               
 
                 // Rudder
                 queryValue = aCommand.Command.Rudder;
-                write(aCommand.Command.ParseRudderToString());
+                write("set"+aCommand.Command.ParseRudderToString());
+                 a = read();
+
+                write("get /controls/flight/rudder\n");
                 res = CheckData(queryValue, read());
-                aCommand.Completion.SetResult(res);
 
                 // Throttle
                 queryValue = aCommand.Command.Throttle;
-                write(aCommand.Command.ParseThrottleToString());
+                write("set"+ aCommand.Command.ParseThrottleToString());
+                write("get /controls/engines/current-engine/throttle\n");
                 res = CheckData(queryValue, read());
                 aCommand.Completion.SetResult(res);
             }
@@ -96,7 +105,8 @@ namespace FlightMobileApp.Model
             Console.WriteLine("Server Connected");
             this.stream = tcp_client.GetStream();
             // first command to change PROMPT
-            write("data/n");
+            write("data\n");
+     
         }
 
         public void disconnect()

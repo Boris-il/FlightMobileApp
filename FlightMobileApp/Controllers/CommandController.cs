@@ -44,8 +44,9 @@ namespace FlightMobileApp.Controllers
                 return BadRequest("Invalid data.");
             }
 
-            await client.Execute(command);
             client.Start();
+            await client.Execute(command);
+            
             // returns success
             return StatusCode(200);
         }
