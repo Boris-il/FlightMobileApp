@@ -40,22 +40,25 @@ namespace FlightMobileApp.Model
 
         public void Start()
         {
+            connect("127.0.0.1", 5403);
             Task.Factory.StartNew(ProcessCommands);
         }
         
         public void ProcessCommands()
         {
-            connect("127.0.0.1", 5403);
+            //connect("127.0.0.1", 5403);
             double queryValue = 0;
             Result res;
             foreach(AsyncCommand aCommand in this.queue.GetConsumingEnumerable())
             {
                 // Aileron
                 queryValue = aCommand.Command.Aileron;
-                write(aCommand.Command.ParseAileronToString());
-                res = CheckData(queryValue, read());
+                string cmd = aCommand.Command.ParseAileronToString();
+                write(cmd);
+                string ret = read();
+                res = CheckData(queryValue, ret);
                 aCommand.Completion.SetResult(res);
-                
+
                 // Elevator
                 queryValue = aCommand.Command.Elevator;
                 write(aCommand.Command.ParseElevatorToString());
@@ -78,9 +81,16 @@ namespace FlightMobileApp.Model
 
         public Result CheckData(double val,string recieve)
         {
-            if (val == Convert.ToDouble(recieve))
+            double d;
+            if (Double.TryParse(recieve, out d))
             {
-                return Result.Ok;
+                if (val == d)
+                {
+                    return Result.Ok;
+                }
+            } else
+            {
+                Console.WriteLine("Unable to parse '{0}'", recieve);
             }
             return Result.NotOk;
         }
@@ -96,7 +106,8 @@ namespace FlightMobileApp.Model
             Console.WriteLine("Server Connected");
             this.stream = tcp_client.GetStream();
             // first command to change PROMPT
-            write("data/n");
+            write("data\n");
+            //read();
         }
 
         public void disconnect()
