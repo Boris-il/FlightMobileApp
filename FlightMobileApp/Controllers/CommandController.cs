@@ -18,10 +18,12 @@ namespace FlightMobileApp.Controllers
 
         public CommandController()
         {
-            this.client = new FlightGearClient();
+            this.client = FlightGearClient.GetFlightGearClient();
+            //todo delete
+            Console.WriteLine("inside controller");
         }
 
-        // GET: api/Command
+       /* // GET: api/Command
         [HttpGet]
         public IEnumerable<string> Get()
         {
@@ -33,7 +35,7 @@ namespace FlightMobileApp.Controllers
         public string Get(int id)
         {
             return "value";
-        }
+        }*/
 
         [HttpPost]
         public async Task<ActionResult<Command>> PostCommand([FromBody] Command command)
@@ -44,11 +46,10 @@ namespace FlightMobileApp.Controllers
                 return BadRequest("Invalid data.");
             }
 
-            client.Start();
-            await client.Execute(command);
-            
-            // returns success
-            return StatusCode(200);
+            //client.Start();
+           var result =  await client.Execute(command);
+            return StatusCode((int)result);
+
         }
 
         // PUT: api/Command/5
