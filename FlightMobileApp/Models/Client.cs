@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using FlightMobileApp.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace FlightMobileApp.Model
 {
@@ -24,11 +25,14 @@ namespace FlightMobileApp.Model
         // Data stream.
         NetworkStream stream;
         // Connection configs
-        
+        string ip, port;
 
-        public FlightGearClient()
+        public FlightGearClient(IConfiguration conf)
         {
             this.queue = new BlockingCollection<AsyncCommand>();
+            this.ip = conf.GetValue<string>("Logging:CommandsConnectionData:Host");
+            this.port = conf.GetValue<string>("Logging:CommandsConnectionData:Port");
+
         }
 
         public Task<Result> Execute(Command cmd)
@@ -45,7 +49,7 @@ namespace FlightMobileApp.Model
 
         public void ProcessCommands()
         {
-            connect("127.0.0.1", 5404);
+            connect(this.ip, 5404);
             double queryValue = 0;
             Result res;
             string a;
