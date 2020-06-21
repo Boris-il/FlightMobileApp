@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using FlightMobileApp.Models;
-using Microsoft.AspNetCore.Mvc;
 
 namespace FlightMobileApp.Model
 {
@@ -40,57 +37,63 @@ namespace FlightMobileApp.Model
 
         public void Start()
         {
-            connect("127.0.0.1", 5403);
             Task.Factory.StartNew(ProcessCommands);
         }
-        
+
         public void ProcessCommands()
         {
-            //connect("127.0.0.1", 5403);
+            connect("127.0.0.1", 5404);
             double queryValue = 0;
             Result res;
-            foreach(AsyncCommand aCommand in this.queue.GetConsumingEnumerable())
+            string a,b;
+            foreach (AsyncCommand aCommand in this.queue.GetConsumingEnumerable())
             {
                 // Aileron
                 queryValue = aCommand.Command.Aileron;
-                string cmd = aCommand.Command.ParseAileronToString();
-                write(cmd);
-                string ret = read();
-                res = CheckData(queryValue, ret);
-                aCommand.Completion.SetResult(res);
+                write("set" + aCommand.Command.ParseAileronToString());
+                //a = read();
+                write("get /controls/flight/aileron\n");
+                b = read();
+                res = CheckData(queryValue, b);
 
+                
                 // Elevator
                 queryValue = aCommand.Command.Elevator;
-                write(aCommand.Command.ParseElevatorToString());
-                res = CheckData(queryValue, read());
-                aCommand.Completion.SetResult(res);
+                write("set" + aCommand.Command.ParseElevatorToString());
+                //a = read();
+
+                write("get /controls/flight/elevator\n");
+                b = read();
+
+                res = CheckData(queryValue, b);
+
 
                 // Rudder
                 queryValue = aCommand.Command.Rudder;
-                write(aCommand.Command.ParseRudderToString());
-                res = CheckData(queryValue, read());
-                aCommand.Completion.SetResult(res);
+                write("set" + aCommand.Command.ParseRudderToString());
+                //a = read();
+
+                write("get /controls/flight/rudder\n");
+                b = read();
+
+                res = CheckData(queryValue, b);
 
                 // Throttle
                 queryValue = aCommand.Command.Throttle;
-                write(aCommand.Command.ParseThrottleToString());
-                res = CheckData(queryValue, read());
+                write("set" + aCommand.Command.ParseThrottleToString());
+                write("get /controls/engines/current-engine/throttle\n");
+                b = read();
+                res = CheckData(queryValue, b);
+
                 aCommand.Completion.SetResult(res);
             }
         }
 
-        public Result CheckData(double val,string recieve)
+        public Result CheckData(double val, string recieve)
         {
-            double d;
-            if (Double.TryParse(recieve, out d))
+            if (val == Convert.ToDouble(recieve))
             {
-                if (val == d)
-                {
-                    return Result.Ok;
-                }
-            } else
-            {
-                Console.WriteLine("Unable to parse '{0}'", recieve);
+                return Result.Ok;
             }
             return Result.NotOk;
         }
@@ -107,7 +110,7 @@ namespace FlightMobileApp.Model
             this.stream = tcp_client.GetStream();
             // first command to change PROMPT
             write("data\n");
-            //read();
+
         }
 
         public void disconnect()
