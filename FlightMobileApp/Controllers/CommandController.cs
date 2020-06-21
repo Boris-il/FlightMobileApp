@@ -46,7 +46,7 @@ namespace FlightMobileApp.Controllers
 
             client.Start();
             await client.Execute(command);
-
+            
             // returns success
             return StatusCode(200);
         }

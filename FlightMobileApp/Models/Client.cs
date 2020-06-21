@@ -48,42 +48,39 @@ namespace FlightMobileApp.Model
             connect("127.0.0.1", 5404);
             double queryValue = 0;
             Result res;
-            string b;
-            foreach (AsyncCommand aCommand in this.queue.GetConsumingEnumerable())
+            string a;
+            foreach(AsyncCommand aCommand in this.queue.GetConsumingEnumerable())
             {
                 // Aileron.
                 queryValue = aCommand.Command.Aileron;
-                write("set" + aCommand.Command.ParseAileronToString());
-                //a = read();
+                write("set"+aCommand.Command.ParseAileronToString());
+                a = read();
                 write("get /controls/flight/aileron\n");
-                b = read();
-                res = CheckData(queryValue, b);
-                                
-                // Elevator.
+                res = CheckData(queryValue, read());
+                
+                
+                // Elevator
                 queryValue = aCommand.Command.Elevator;
-                write("set" + aCommand.Command.ParseElevatorToString());
-                //a = read();
-                write("get /controls/flight/elevator\n");
-                b = read();
-                res = CheckData(queryValue, b);
+                write("set"+aCommand.Command.ParseElevatorToString());
+                a = read();
 
+                write("get /controls/flight/elevator\n" );
+                res = CheckData(queryValue, read());
+               
 
                 // Rudder.
                 queryValue = aCommand.Command.Rudder;
-                write("set" + aCommand.Command.ParseRudderToString());
-                //a = read();
+                write("set"+aCommand.Command.ParseRudderToString());
+                 a = read();
+
                 write("get /controls/flight/rudder\n");
-                b = read();
-                res = CheckData(queryValue, b);
+                res = CheckData(queryValue, read());
 
                 // Throttle.
                 queryValue = aCommand.Command.Throttle;
-                write("set" + aCommand.Command.ParseThrottleToString());
+                write("set"+ aCommand.Command.ParseThrottleToString());
                 write("get /controls/engines/current-engine/throttle\n");
-                b = read();
-                res = CheckData(queryValue, b);
-
-                // Set task result.
+                res = CheckData(queryValue, read());
                 aCommand.Completion.SetResult(res);
             }
         }
@@ -109,7 +106,7 @@ namespace FlightMobileApp.Model
             this.stream = tcp_client.GetStream();
             // first command to change PROMPT
             write("data\n");
-
+     
         }
 
         public void disconnect()

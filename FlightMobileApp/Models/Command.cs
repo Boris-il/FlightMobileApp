@@ -23,22 +23,24 @@ namespace FlightMobileApp.Models
 
         public string ParseElevatorToString()
         {
-            return "set /controls/flight/elevator " + this.Elevator + "\n";
+            return " /controls/flight/elevator " + this.Elevator + "\n";
         }
+
+       
 
         public string ParseRudderToString()
         {
-            return "set /controls/flight/rudder " + this.Rudder + "\n";
+            return " /controls/flight/rudder " + this.Rudder + "\n";
         }
 
         public string ParseThrottleToString()
         {
-            return "set /controls/engines/current-engine/throttle " + this.Throttle + "\n";
+            return " /controls/engines/current-engine/throttle " + this.Throttle + "\n";
         }
 
         public string ParseAileronToString()
         {
-            return "set /controls/flight/aileron " + this.Aileron + "\n";
+            return " /controls/flight/aileron " + this.Aileron + "\n";
         }
     }
 }
