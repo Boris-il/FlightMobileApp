@@ -6,7 +6,10 @@ using Newtonsoft.Json;
 
 namespace FlightMobileApp.Models
 {
-    public enum Result { Ok, NotOk};
+    public enum Result {
+        Ok = 200, 
+        NotOk = 500
+    };
 
     public class Command
     {
