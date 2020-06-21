@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using FlightMobileApp.Models;
-using Microsoft.AspNetCore.Mvc;
 
 namespace FlightMobileApp.Model
 {
@@ -20,11 +17,14 @@ namespace FlightMobileApp.Model
 
     class FlightGearClient : IClient
     {
+        // Blocking tasks queue.
         private readonly BlockingCollection<AsyncCommand> queue;
         // Tcp client.
         private TcpClient tcp_client;
         // Data stream.
         NetworkStream stream;
+        // Connection configs
+        
 
         public FlightGearClient()
         {
@@ -42,7 +42,7 @@ namespace FlightMobileApp.Model
         {
             Task.Factory.StartNew(ProcessCommands);
         }
-        
+
         public void ProcessCommands()
         {
             connect("127.0.0.1", 5404);
@@ -51,7 +51,7 @@ namespace FlightMobileApp.Model
             string a;
             foreach(AsyncCommand aCommand in this.queue.GetConsumingEnumerable())
             {
-                // Aileron
+                // Aileron.
                 queryValue = aCommand.Command.Aileron;
                 write("set"+aCommand.Command.ParseAileronToString());
                 a = read();
@@ -68,7 +68,7 @@ namespace FlightMobileApp.Model
                 res = CheckData(queryValue, read());
                
 
-                // Rudder
+                // Rudder.
                 queryValue = aCommand.Command.Rudder;
                 write("set"+aCommand.Command.ParseRudderToString());
                  a = read();
@@ -76,7 +76,7 @@ namespace FlightMobileApp.Model
                 write("get /controls/flight/rudder\n");
                 res = CheckData(queryValue, read());
 
-                // Throttle
+                // Throttle.
                 queryValue = aCommand.Command.Throttle;
                 write("set"+ aCommand.Command.ParseThrottleToString());
                 write("get /controls/engines/current-engine/throttle\n");
@@ -85,7 +85,7 @@ namespace FlightMobileApp.Model
             }
         }
 
-        public Result CheckData(double val,string recieve)
+        public Result CheckData(double val, string recieve)
         {
             if (val == Convert.ToDouble(recieve))
             {
