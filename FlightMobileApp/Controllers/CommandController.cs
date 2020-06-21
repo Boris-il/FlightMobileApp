@@ -18,17 +18,19 @@ namespace FlightMobileApp.Controllers
 
         public CommandController()
         {
-            this.client = new FlightGearClient();
+            this.client = FlightGearClient.GetFlightGearClient();
+            //todo delete
+            Console.WriteLine("inside controller");
         }
 
-        /*// GET: api/Command
+       /* // GET: api/Command
         [HttpGet]
         public IEnumerable<string> Get()
         {
             return new string[] { "value1", "value2" };
-        }*/
+        }
 
-        /*// GET: api/Command/5
+        // GET: api/Command/5
         [HttpGet("{id}", Name = "Get")]
         public string Get(int id)
         {
@@ -44,23 +46,22 @@ namespace FlightMobileApp.Controllers
                 return BadRequest("Invalid data.");
             }
 
-            client.Start();
-            await client.Execute(command);
-            
-            // returns success
-            return StatusCode(200);
+            //client.Start();
+           var result =  await client.Execute(command);
+            return StatusCode((int)result);
+
         }
 
-        /*// PUT: api/Command/5
+        // PUT: api/Command/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)
         {
-        }*/
+        }
 
-        /*// DELETE: api/ApiWithActions/5
+        // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
         public void Delete(int id)
         {
-        }*/
+        }
     }
 }
