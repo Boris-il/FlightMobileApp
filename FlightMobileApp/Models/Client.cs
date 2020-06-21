@@ -17,11 +17,14 @@ namespace FlightMobileApp.Model
 
     class FlightGearClient : IClient
     {
+        // Blocking tasks queue.
         private readonly BlockingCollection<AsyncCommand> queue;
         // Tcp client.
         private TcpClient tcp_client;
         // Data stream.
         NetworkStream stream;
+        // Connection configs
+        
 
         public FlightGearClient()
         {
@@ -45,46 +48,42 @@ namespace FlightMobileApp.Model
             connect("127.0.0.1", 5404);
             double queryValue = 0;
             Result res;
-            string a,b;
+            string b;
             foreach (AsyncCommand aCommand in this.queue.GetConsumingEnumerable())
             {
-                // Aileron
+                // Aileron.
                 queryValue = aCommand.Command.Aileron;
                 write("set" + aCommand.Command.ParseAileronToString());
                 //a = read();
                 write("get /controls/flight/aileron\n");
                 b = read();
                 res = CheckData(queryValue, b);
-
-                
-                // Elevator
+                                
+                // Elevator.
                 queryValue = aCommand.Command.Elevator;
                 write("set" + aCommand.Command.ParseElevatorToString());
                 //a = read();
-
                 write("get /controls/flight/elevator\n");
                 b = read();
-
                 res = CheckData(queryValue, b);
 
 
-                // Rudder
+                // Rudder.
                 queryValue = aCommand.Command.Rudder;
                 write("set" + aCommand.Command.ParseRudderToString());
                 //a = read();
-
                 write("get /controls/flight/rudder\n");
                 b = read();
-
                 res = CheckData(queryValue, b);
 
-                // Throttle
+                // Throttle.
                 queryValue = aCommand.Command.Throttle;
                 write("set" + aCommand.Command.ParseThrottleToString());
                 write("get /controls/engines/current-engine/throttle\n");
                 b = read();
                 res = CheckData(queryValue, b);
 
+                // Set task result.
                 aCommand.Completion.SetResult(res);
             }
         }
