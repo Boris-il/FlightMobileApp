@@ -7,6 +7,7 @@ using FlightMobileApp.Model;
 using FlightMobileApp.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace FlightMobileApp.Controllers
 {
@@ -16,9 +17,10 @@ namespace FlightMobileApp.Controllers
     {
         FlightGearClient client;
 
-        public CommandController()
+        public CommandController(IConfiguration conf)
         {
-            this.client = FlightGearClient.GetFlightGearClient();
+            this.client = FlightGearClient.GetFlightGearClient(conf);
+
             //todo delete
             Console.WriteLine("inside controller");
         }
