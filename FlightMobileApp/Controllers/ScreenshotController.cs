@@ -10,7 +10,8 @@ namespace FlightMobileApp.Controllers
     [ApiController]
     public class ScreenshotController : ControllerBase
     {
-        string httpAddress, port;
+        private readonly string httpAddress;
+        private readonly string port;
 
         public ScreenshotController(IConfiguration conf)
         {
