@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FlightMobileApp.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace FlightMobileApp.Model
 {
@@ -27,21 +28,27 @@ namespace FlightMobileApp.Model
         private TcpClient tcp_client;
         // Data stream.
         private NetworkStream stream;
+        // Connection data.
+        private string address, port;
 
         private bool isConected = false;
+
 
         // Lock synchronization object
         private static readonly object syncLock = new object();
 
         // Constructor (protected)
-        protected FlightGearClient()
+        protected FlightGearClient(IConfiguration conf)
         {
             this.queue = new BlockingCollection<AsyncCommand>();
+            this.address = conf.GetValue<string>("Logging:CommandsConnectionData:Host");
+            this.port = conf.GetValue<string>("Logging:CommandsConnectionData:Port");
+
             //start a new task 
             this.Start();
         }
 
-        public static FlightGearClient GetFlightGearClient()
+        public static FlightGearClient GetFlightGearClient(IConfiguration conf)
         {
             if (instance == null)
             {
@@ -49,7 +56,7 @@ namespace FlightMobileApp.Model
                 {
                     if (instance == null)
                     {
-                        instance = new FlightGearClient();
+                        instance = new FlightGearClient(conf);
                     }
                 }
             }
@@ -74,7 +81,8 @@ namespace FlightMobileApp.Model
             foreach (AsyncCommand aCommand in this.queue.GetConsumingEnumerable())
             {
                 Result res = Result.Ok;
-                if (!Connect("127.0.0.1", 5404))
+                int port = Int32.Parse(this.port);
+                if (!connect(this.address, port))
                 {
                     aCommand.Completion.SetException(new Exception("failed Conecting to FlightGear"));
                     continue;
