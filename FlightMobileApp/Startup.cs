@@ -36,7 +36,7 @@ namespace FlightMobileApp
                 app.UseDeveloperExceptionPage();
             }
 
-            //app.UseHttpsRedirection();
+          
 
             app.UseRouting();
 
