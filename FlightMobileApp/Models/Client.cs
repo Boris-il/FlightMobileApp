@@ -161,6 +161,7 @@ namespace FlightMobileApp.Model
         private bool SetValueThrottle(AsyncCommand aCommand) { 
             // Throttle
             double queryValue = aCommand.Command.Throttle;
+            Write("set" + aCommand.Command.ParseThrottleToString());
             Write("get /controls/engines/current-engine/throttle\n");
             if (!IsValidData(queryValue, Read()))
             {
