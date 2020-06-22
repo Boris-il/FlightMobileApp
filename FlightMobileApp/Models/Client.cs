@@ -14,10 +14,10 @@ namespace FlightMobileApp.Model
 {
     interface IClient
     {
-        bool connect(string ip, int port);
-        void write(string command);
-        string read();
-        void disconnect();
+        bool Connect(string ip, int port);
+        void Write(string command);
+        string Read();
+        void Disconnect();
     }
 
     class FlightGearClient : IClient
@@ -28,14 +28,15 @@ namespace FlightMobileApp.Model
         private TcpClient tcp_client;
         // Data stream.
         private NetworkStream stream;
-        // Connection data.
-        private string address, port;
 
+        // Connection data.
+        private readonly string address;
+        private readonly string port;
         private bool isConected = false;
 
 
         // Lock synchronization object
-        private static object syncLock = new object();
+        private static readonly object syncLock = new object();
 
         // Constructor (protected)
         protected FlightGearClient(IConfiguration conf)
@@ -75,71 +76,98 @@ namespace FlightMobileApp.Model
             Console.WriteLine("creating thread of simlator");
             Task.Factory.StartNew(ProcessCommands);
         }
-        
+
         public void ProcessCommands()
         {
-
-            
-            foreach(AsyncCommand aCommand in this.queue.GetConsumingEnumerable())
+            foreach (AsyncCommand aCommand in this.queue.GetConsumingEnumerable())
             {
-                double queryValue = 0;
                 Result res = Result.Ok;
                 int port = Int32.Parse(this.port);
-                if (!connect(this.address, port))
+                if (!Connect(this.address, port))
                 {
                     aCommand.Completion.SetException(new Exception("failed Conecting to FlightGear"));
                     continue;
                 }
                 try
                 {
-                    // Aileron
-                    queryValue = aCommand.Command.Aileron;
-                    write("set" + aCommand.Command.ParseAileronToString());
-                    write("get /controls/flight/aileron\n");
-                    if (!IsValidData(queryValue, read()))
+                    if (!SetValueAileron(aCommand))
                     {
                         aCommand.Completion.SetException(new Exception("Error - can not set ailron"));
                         continue;
                     }
-
-                    // Elevator
-                    queryValue = aCommand.Command.Elevator;
-                    write("set" + aCommand.Command.ParseElevatorToString());
-                    write("get /controls/flight/elevator\n");
-                    if (!IsValidData(queryValue, read()))
+                    if (!SetValueElevator(aCommand))
                     {
                         aCommand.Completion.SetException(new Exception("Error - can not set elevator"));
                         continue;
                     }
-
-                    // Rudder
-                    queryValue = aCommand.Command.Rudder;
-                    write("set" + aCommand.Command.ParseRudderToString());
-                    write("get /controls/flight/rudder\n");
-                    if (!IsValidData(queryValue, read()))
+                    if (!SetValueThrottle(aCommand))
+                    {
+                        aCommand.Completion.SetException(new Exception("Error - can not set throttle"));
+                        continue;
+                    }
+                    if (!SetValueRudder(aCommand))
                     {
                         aCommand.Completion.SetException(new Exception("Error - can not set rudder"));
                         continue;
                     }
 
-                    // Throttle
-                    queryValue = aCommand.Command.Throttle;
-                    write("set" + aCommand.Command.ParseThrottleToString());
-                    write("get /controls/engines/current-engine/throttle\n");
-                    if (!IsValidData(queryValue, read()))
-                    {
-                        aCommand.Completion.SetException(new Exception("Error - can not set throttle"));
-                        continue;
-                    }
                 } catch (Exception e)
                 {
                     aCommand.Completion.SetException(e);
                     continue;
-
                 }
-                
                 aCommand.Completion.SetResult(res);
             }
+        }
+
+        private bool SetValueAileron(AsyncCommand aCommand)
+        {
+            // Aileron
+            double queryValue = aCommand.Command.Aileron;
+            Write("set" + aCommand.Command.ParseAileronToString());
+            Write("get /controls/flight/aileron\n");
+            if (!IsValidData(queryValue, Read()))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private bool SetValueElevator(AsyncCommand aCommand)
+        {
+            // Elevator
+            double queryValue = aCommand.Command.Elevator;
+            Write("set" + aCommand.Command.ParseElevatorToString());
+            Write("get /controls/flight/elevator\n");
+            if (!IsValidData(queryValue, Read()))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private bool SetValueRudder(AsyncCommand aCommand)
+        { 
+            // Rudder
+            double queryValue = aCommand.Command.Rudder;
+            Write("set" + aCommand.Command.ParseRudderToString());
+            Write("get /controls/flight/rudder\n");
+            if (!IsValidData(queryValue, Read()))
+            {
+                return false;
+            }
+            return true;
+        }
+        private bool SetValueThrottle(AsyncCommand aCommand) { 
+            // Throttle
+            double queryValue = aCommand.Command.Throttle;
+            Write("get /controls/engines/current-engine/throttle\n");
+            if (!IsValidData(queryValue, Read()))
+            {
+                return false;
+            }
+            return true;
+            
         }
 
         public bool IsValidData(double val,string recieve)
@@ -151,8 +179,7 @@ namespace FlightMobileApp.Model
             return false;
         }
 
-
-        public bool connect(string ip, int port)
+        public bool Connect(string ip, int port)
         {
             try
             {
@@ -164,7 +191,7 @@ namespace FlightMobileApp.Model
                     Console.WriteLine("Server Connected");
                     this.stream = tcp_client.GetStream();
                     // first command to change PROMPT
-                    write("data\n");
+                    Write("data\n");
                     isConected = true;
                     // Set timeout.
                     tcp_client.ReceiveTimeout = 10000;
@@ -182,11 +209,9 @@ namespace FlightMobileApp.Model
                 return false;
             }
             return true;
-            
-
         }
 
-        public void disconnect()
+        public void Disconnect()
         {
             if (stream != null)
             {
@@ -197,10 +222,9 @@ namespace FlightMobileApp.Model
                 this.tcp_client.Close();
             }
             Console.WriteLine("Server Disconnected");
-
         }
 
-        public string read()
+        public string Read()
         {
             // Buffer to store the response bytes.
             byte[] inData = new byte[256];
@@ -213,9 +237,9 @@ namespace FlightMobileApp.Model
             return responseData;
         }
 
-        public void write(string command)
+        public void Write(string command)
         {
-            //Console.WriteLine(command);
+            
             // Translate the passed message into ASCII and store it as a Byte array.
             byte[] outData = new byte[1024];
             outData = Encoding.ASCII.GetBytes(command);
