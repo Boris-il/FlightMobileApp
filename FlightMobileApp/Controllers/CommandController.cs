@@ -19,7 +19,7 @@ namespace FlightMobileApp.Controllers
 
         public CommandController(IConfiguration conf)
         {
-            this.client = FlightGearClient.GetFlightGearClient();
+            this.client = FlightGearClient.GetFlightGearClient(conf);
             
         }
 

@@ -28,9 +28,10 @@ namespace FlightMobileApp.Model
         private TcpClient tcp_client;
         // Data stream.
         private NetworkStream stream;
-        // Connection data.
-        private string address, port;
 
+        // Connection data.
+        private readonly string address;
+        private readonly string port;
         private bool isConected = false;
 
 
@@ -82,7 +83,7 @@ namespace FlightMobileApp.Model
             {
                 Result res = Result.Ok;
                 int port = Int32.Parse(this.port);
-                if (!connect(this.address, port))
+                if (!Connect(this.address, port))
                 {
                     aCommand.Completion.SetException(new Exception("failed Conecting to FlightGear"));
                     continue;
